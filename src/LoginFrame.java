@@ -1,4 +1,6 @@
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 
 /*
@@ -114,7 +116,7 @@ public class LoginFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        String id = txtID.getText();
+         String id = txtID.getText();
         String password = new String(txtPassword.getPassword());
 
         DB_MAN db = new DB_MAN();
@@ -122,15 +124,25 @@ public class LoginFrame extends javax.swing.JFrame {
             db.dbOpen();
             if (db.validateLogin(id, password)) {
                 JOptionPane.showMessageDialog(this, "로그인 성공!");
-                this.dispose();
-                MainFrame mainFrame = new MainFrame();
+
+                List<String[]> accounts = new ArrayList<>(); // 계좌 정보를 담을 리스트 초기화
+                try {
+                    accounts = db.getAccounts(id); // 계좌 정보 가져오기
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "계좌 정보 조회 중 오류 발생: " + e.getMessage());
+                }
+
+                // MainFrame으로 이동
+                MainFrame mainFrame = new MainFrame(id, accounts);
                 mainFrame.setVisible(true);
+                this.dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "아이디 또는 비밀번호가 잘못되었습니다.");
             }
             db.dbClose();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "DB 오류 : " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "DB 오류: " + e.getMessage());
+            e.printStackTrace(); // 디버깅 정보 출력
         }
     }//GEN-LAST:event_btnLoginActionPerformed
 

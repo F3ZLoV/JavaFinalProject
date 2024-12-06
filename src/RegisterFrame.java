@@ -46,6 +46,11 @@ public class RegisterFrame extends javax.swing.JFrame {
     private boolean validateCaptcha(String userInput) {
         return currentCaptcha.isCorrect(userInput);
     }
+    
+    private String generateAccountNumber() {
+        return String.valueOf((long) (Math.random() * 1_000_000_0000L));
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

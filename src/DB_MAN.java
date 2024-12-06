@@ -4,6 +4,8 @@
  */
 import java.sql.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 /**
  *
  * @author F3ZLoV
@@ -60,4 +62,44 @@ public class DB_MAN {
         }
         return false;
     }
+    
+    public void createAccount(String userId, String accountNumber) throws SQLException {
+        String query = "INSERT INTO account (USER_ID, ACCOUNT_NUMBER, BALANCE) VALUES (?, ?, ?)";
+        try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
+            pstmt.setString(1, userId);
+            pstmt.setString(2, accountNumber);
+            pstmt.setInt(3, 0); 
+            pstmt.executeUpdate();
+        }
+    }
+    
+    private String generateAccountNumber() {
+        return String.valueOf((long) (Math.random() * 1_000_000_0000L));
+    }
+    
+    public List<String[]> getAccounts(String userId) throws SQLException {
+        String query = "SELECT ACCOUNT_NUMBER, BALANCE FROM account WHERE USER_ID = ?";
+        List<String[]> accounts = new ArrayList<>();
+        try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
+            pstmt.setString(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                String accountNumber = rs.getString("ACCOUNT_NUMBER");
+                String balance = String.valueOf(rs.getInt("BALANCE"));
+                accounts.add(new String[]{accountNumber, balance});
+            }
+        }
+        return accounts;
+    }
+
+    public void deleteAccount(String accountNumber) throws SQLException {
+        String query = "DELETE FROM account WHERE ACCOUNT_NUMBER = ?";
+        try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
+            pstmt.setString(1, accountNumber);
+            pstmt.executeUpdate();
+        }
+    }
+
+    
+    
 }
