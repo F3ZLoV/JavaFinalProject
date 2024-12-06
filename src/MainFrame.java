@@ -15,24 +15,28 @@ import javax.swing.table.DefaultTableModel;
 public class MainFrame extends javax.swing.JFrame {
     private String userId;
     private List<String[]> accounts;
+    private boolean isLoggedIn = false;
     /**
      * Creates new form MainFrame
      */
     public MainFrame() {
         initComponents();
     }
-    
-    public MainFrame(String userId) {
-        this.userId = userId;
-        initComponents();
-        loadAccounts();
-    }
-    
+   
     public MainFrame(String userId, List<String[]> accounts) {
+        this.isLoggedIn = true;
         this.userId = userId;
         this.accounts = accounts;
         initComponents();
         displayAccounts();
+    }
+    
+    private String formatAccountNumber(String accountNumber) {
+        return accountNumber.substring(0, 4) + "-" + accountNumber.substring(4, 7) + "-" + accountNumber.substring(7);
+    }
+    
+    private String unformatAccountNumber(String formattedAccountNumber) {
+        return formattedAccountNumber.replace("-", "");
     }
     
     private void displayAccounts() {
@@ -40,7 +44,8 @@ public class MainFrame extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) tblAccounts.getModel();
         model.setRowCount(0);
         for (String[] account : accounts) {
-            model.addRow(new Object[]{account[0], account[1]});
+            String formattedAccountNumber = formatAccountNumber(account[0]);
+            model.addRow(new Object[]{formattedAccountNumber, account[1]});
         }
     }
     
@@ -51,9 +56,12 @@ public class MainFrame extends javax.swing.JFrame {
             List<String[]> accounts = db.getAccounts(userId);
             DefaultTableModel model = (DefaultTableModel) tblAccounts.getModel();
             model.setRowCount(0);
+
             for (String[] account : accounts) {
-                model.addRow(account);
+                String formattedAccountNumber = formatAccountNumber(account[0]);
+                model.addRow(new Object[]{formattedAccountNumber, account[1]});
             }
+
             db.dbClose();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "계좌 불러오기 오류: " + e.getMessage());
@@ -84,6 +92,7 @@ public class MainFrame extends javax.swing.JFrame {
         btnCreateAccount = new javax.swing.JButton();
         btnDeleteAccount = new javax.swing.JButton();
         btnLogout = new javax.swing.JButton();
+        btnManageAccount = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("은행 계좌 관리 시스템");
@@ -140,6 +149,13 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        btnManageAccount.setText("계좌 관리 창으로");
+        btnManageAccount.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnManageAccountActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -154,12 +170,14 @@ public class MainFrame extends javax.swing.JFrame {
                         .addComponent(lblUserId))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(48, 48, 48)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(btnCreateAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnDeleteAccount)))))
+                                .addComponent(btnDeleteAccount)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnManageAccount)))))
                 .addContainerGap(70, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(29, 29, 29)
@@ -182,7 +200,8 @@ public class MainFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCreateAccount)
-                    .addComponent(btnDeleteAccount))
+                    .addComponent(btnDeleteAccount)
+                    .addComponent(btnManageAccount))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 121, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnLogin)
@@ -207,6 +226,10 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRegisterActionPerformed
 
     private void btnCreateAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAccountActionPerformed
+        if (!isLoggedIn) {
+            JOptionPane.showMessageDialog(this, "로그인되지 않은 상태에서는 계좌를 생성할 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         String accountNumber = generateAccountNumber();
         DB_MAN db = new DB_MAN();
         try {
@@ -240,10 +263,30 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnDeleteAccountActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
-        this.dispose();
-        LoginFrame loginFrame = new LoginFrame();
-        loginFrame.setVisible(true);
+        int confirm = JOptionPane.showConfirmDialog(this, "로그아웃 하시겠습니까?", "로그아웃", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            JOptionPane.showMessageDialog(this, "로그인을 해주세요.");
+            this.dispose();
+            LoginFrame loginFrame = new LoginFrame();
+            loginFrame.setVisible(true);
+        }
     }//GEN-LAST:event_btnLogoutActionPerformed
+
+    private void btnManageAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManageAccountActionPerformed
+        int selectedRow = tblAccounts.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "계좌를 선택하세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String formattedAccountNumber = (String) tblAccounts.getValueAt(selectedRow, 0);
+        String accountNumber = unformatAccountNumber(formattedAccountNumber);
+        long balance = Long.parseLong((String) tblAccounts.getValueAt(selectedRow, 1));
+
+        AccountFrame accountFrame = new AccountFrame(userId, accounts, accountNumber, balance);
+        accountFrame.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_btnManageAccountActionPerformed
 
     /**
      * @param args the command line arguments
@@ -285,6 +328,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnDeleteAccount;
     private javax.swing.JButton btnLogin;
     private javax.swing.JButton btnLogout;
+    private javax.swing.JButton btnManageAccount;
     private javax.swing.JButton btnRegister;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
