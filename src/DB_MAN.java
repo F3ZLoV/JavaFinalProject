@@ -6,6 +6,7 @@ import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author F3ZLoV
@@ -73,9 +74,32 @@ public class DB_MAN {
         }
     }
     
-    private String generateAccountNumber() {
-        return String.valueOf((long) (Math.random() * 1_000_000_0000L));
+    private String generateRandomAccountNumber() {
+        long min = 1000000000L; // 10자리 최소값
+        long max = 9999999999L; // 10자리 최대값
+        long randomNumber = min + (long) (Math.random() * (max - min + 1));
+        return String.valueOf(randomNumber);
     }
+    
+    public String generateAccountNumber() throws SQLException {
+        String accountNumber;
+        String checkQuery = "SELECT COUNT(*) FROM account WHERE ACCOUNT_NUMBER = ?";
+
+        do {
+            accountNumber = generateRandomAccountNumber(); // 랜덤 계좌 번호 생성
+            try (PreparedStatement pstmt = DB_con.prepareStatement(checkQuery)) {
+                pstmt.setString(1, accountNumber);
+                ResultSet rs = pstmt.executeQuery();
+                rs.next();
+                if (rs.getInt(1) == 0) {
+                    break; // 중복되지 않는 계좌 번호
+                }
+            }
+        } while (true);
+
+        return accountNumber;
+    }
+    
     
     public List<String[]> getAccounts(String userId) throws SQLException {
         String query = "SELECT ACCOUNT_NUMBER, BALANCE FROM account WHERE USER_ID = ?";
@@ -100,6 +124,74 @@ public class DB_MAN {
         }
     }
 
+    public void updateBalance(String accountNumber, long amount, String description) throws SQLException {
+        String updateBalanceQuery = "UPDATE account SET BALANCE = BALANCE + ? WHERE ACCOUNT_NUMBER = ?";
+        String insertTransactionQuery = "INSERT INTO transaction (ACCOUNT_NUMBER, AMOUNT, DESCRIPTION) VALUES (?, ?, ?)";
+
+        try (PreparedStatement updateStmt = DB_con.prepareStatement(updateBalanceQuery);
+             PreparedStatement insertStmt = DB_con.prepareStatement(insertTransactionQuery)) {
+            // 잔액 update
+            updateStmt.setLong(1, amount);
+            updateStmt.setString(2, accountNumber);
+            updateStmt.executeUpdate();
+
+            // 거래 기록
+            insertStmt.setString(1, accountNumber);
+            insertStmt.setLong(2, amount);
+            insertStmt.setString(3, description);
+            insertStmt.executeUpdate();
+        }
+    }
     
+    public void transferMoney(String senderAccountNumber, String receiverAccountNumber, long amount) throws SQLException {
+        String updateSenderQuery = "UPDATE account SET BALANCE = BALANCE - ? WHERE ACCOUNT_NUMBER = ?";
+        String updateReceiverQuery = "UPDATE account SET BALANCE = BALANCE + ? WHERE ACCOUNT_NUMBER = ?";
+        String insertTransactionQuery = "INSERT INTO transaction (ACCOUNT_NUMBER, TARGET_ACCOUNT, AMOUNT, DESCRIPTION) VALUES (?, ?, ?, ?)";
+
+        try (PreparedStatement updateSenderStmt = DB_con.prepareStatement(updateSenderQuery);
+             PreparedStatement updateReceiverStmt = DB_con.prepareStatement(updateReceiverQuery);
+             PreparedStatement insertTransactionStmt = DB_con.prepareStatement(insertTransactionQuery)) {
+
+            // 송금 계좌 잔액 업데이트
+            updateSenderStmt.setLong(1, amount);
+            updateSenderStmt.setString(2, senderAccountNumber);
+            updateSenderStmt.executeUpdate();
+
+            // 수취 계좌 잔액 업데이트
+            updateReceiverStmt.setLong(1, amount);
+            updateReceiverStmt.setString(2, receiverAccountNumber);
+            updateReceiverStmt.executeUpdate();
+
+            // 거래 기록 (송금자)
+            insertTransactionStmt.setString(1, senderAccountNumber);
+            insertTransactionStmt.setString(2, receiverAccountNumber);
+            insertTransactionStmt.setLong(3, -amount);
+            insertTransactionStmt.setString(4, "송금");
+            insertTransactionStmt.executeUpdate();
+
+            // 거래 기록 (수취인)
+            insertTransactionStmt.setString(1, receiverAccountNumber);
+            insertTransactionStmt.setString(2, senderAccountNumber);
+            insertTransactionStmt.setLong(3, amount);
+            insertTransactionStmt.setString(4, "송금 수취");
+            insertTransactionStmt.executeUpdate();
+        }
+    }
     
+    public List<String[]> getTransactionHistory(String accountNumber) throws SQLException {
+        String query = "SELECT AMOUNT, TARGET_ACCOUNT, DESCRIPTION, TRANSACTION_DATE FROM transaction WHERE ACCOUNT_NUMBER = ? ORDER BY TRANSACTION_DATE DESC";
+        List<String[]> transactions = new ArrayList<>();
+        try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
+            pstmt.setString(1, accountNumber);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                String amount = String.valueOf(rs.getLong("AMOUNT"));
+                String targetAccount = rs.getString("TARGET_ACCOUNT") != null ? rs.getString("TARGET_ACCOUNT") : "-";
+                String description = rs.getString("DESCRIPTION");
+                String date = rs.getString("TRANSACTION_DATE");
+                transactions.add(new String[]{amount, targetAccount, description, date});
+            }
+        }
+        return transactions;
+    }
 }
