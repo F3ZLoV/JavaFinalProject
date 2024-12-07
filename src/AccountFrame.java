@@ -1,5 +1,7 @@
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -17,6 +19,7 @@ public class AccountFrame extends javax.swing.JFrame {
     private List<String[]> accounts;
     private String accountNumber;
     private long balance;
+    DB_MAN db = new DB_MAN();
     /**
      * Creates new form AccountFrame
      */
@@ -52,7 +55,7 @@ public class AccountFrame extends javax.swing.JFrame {
     }
 
     private void loadTransactionHistory() {
-        DB_MAN db = new DB_MAN();
+        //DB_MAN db = new DB_MAN();
         try {
             db.dbOpen();
             List<String[]> transactions = db.getTransactionHistory(accountNumber);
@@ -88,6 +91,7 @@ public class AccountFrame extends javax.swing.JFrame {
         btnDeposit = new javax.swing.JButton();
         btnWithdraw = new javax.swing.JButton();
         btnTransfer = new javax.swing.JButton();
+        txtAccount = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -96,6 +100,15 @@ public class AccountFrame extends javax.swing.JFrame {
         lblAccountNumber.setText("계좌 번호 : ");
 
         lblBalance.setText("현재 잔액 : ");
+
+        txtTargetAccount.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtTargetAccountKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtTargetAccountKeyTyped(evt);
+            }
+        });
 
         tblTransactions.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -162,16 +175,19 @@ public class AccountFrame extends javax.swing.JFrame {
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(jLabel2)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(btnTransfer))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(btnWithdraw)
-                                        .addComponent(btnDeposit)))))))
-                .addContainerGap(39, Short.MAX_VALUE))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(18, 18, 18)
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(btnWithdraw)
+                                                .addComponent(btnDeposit)))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(18, 18, 18)
+                                            .addComponent(btnTransfer))
+                                        .addComponent(txtAccount)))))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -183,9 +199,9 @@ public class AccountFrame extends javax.swing.JFrame {
                     .addComponent(lblAccountNumber)
                     .addComponent(lblBalance))
                 .addGap(38, 38, 38)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnDeposit))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnDeposit, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnWithdraw)
                 .addGap(13, 13, 13)
@@ -193,9 +209,11 @@ public class AccountFrame extends javax.swing.JFrame {
                     .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
                     .addComponent(btnTransfer))
-                .addGap(41, 41, 41)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtAccount)
+                .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
                 .addComponent(btnBack)
                 .addGap(24, 24, 24))
         );
@@ -210,7 +228,7 @@ public class AccountFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "0보다 큰 금액을 입력하세요.");
                 return;
             }
-            DB_MAN db = new DB_MAN();
+            
             try {
                 db.dbOpen();
                 db.updateBalance(accountNumber, amount, "입금");
@@ -238,7 +256,7 @@ public class AccountFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "잔액이 부족합니다.");
                 return;
             }
-            DB_MAN db = new DB_MAN();
+            //DB_MAN db = new DB_MAN();
             try {
                 db.dbOpen();
                 db.updateBalance(accountNumber, -amount, "출금");
@@ -287,7 +305,7 @@ public class AccountFrame extends javax.swing.JFrame {
             return;
         }
 
-        DB_MAN db = new DB_MAN();
+        //DB_MAN db = new DB_MAN();
         try {
             db.dbOpen();
             db.transferMoney(accountNumber, targetAccount, amount);
@@ -307,6 +325,28 @@ public class AccountFrame extends javax.swing.JFrame {
         mainFrame.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_btnBackActionPerformed
+
+    private void txtTargetAccountKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTargetAccountKeyTyped
+
+        
+    }//GEN-LAST:event_txtTargetAccountKeyTyped
+
+    private void txtTargetAccountKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTargetAccountKeyReleased
+                try {
+            String accountNumber = txtTargetAccount.getText();
+            db.dbOpen();
+            String UserID = db.getUserID(accountNumber);
+            if (UserID.equals("") == false)
+            {
+                txtAccount.setText(UserID);
+            }
+            else{
+                txtAccount.setText(null);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(AccountFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_txtTargetAccountKeyReleased
 
     /**
      * @param args the command line arguments
@@ -354,6 +394,7 @@ public class AccountFrame extends javax.swing.JFrame {
     private javax.swing.JLabel lblAccountNumber;
     private javax.swing.JLabel lblBalance;
     private javax.swing.JTable tblTransactions;
+    private javax.swing.JLabel txtAccount;
     private javax.swing.JTextField txtAmount;
     private javax.swing.JTextField txtTargetAccount;
     // End of variables declaration//GEN-END:variables
