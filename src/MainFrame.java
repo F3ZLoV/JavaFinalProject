@@ -45,7 +45,9 @@ public class MainFrame extends javax.swing.JFrame {
         model.setRowCount(0);
         for (String[] account : accounts) {
             String formattedAccountNumber = formatAccountNumber(account[0]);
-            model.addRow(new Object[]{formattedAccountNumber, account[1]});
+            String accountType = account[2].equals("SAVINGS") ? "예금 계좌" :
+                                 account[2].equals("DEPOSIT") ? "적금 계좌" : "일반 계좌";
+            model.addRow(new Object[]{formattedAccountNumber, account[1], accountType});
         }
     }
     
@@ -59,7 +61,9 @@ public class MainFrame extends javax.swing.JFrame {
 
             for (String[] account : accounts) {
                 String formattedAccountNumber = formatAccountNumber(account[0]);
-                model.addRow(new Object[]{formattedAccountNumber, account[1]});
+                String accountType = account[2].equals("SAVINGS") ? "예금 계좌" :
+                                    account[2].equals("DEPOSIT") ? "적금 계좌" : "일반 계좌";
+                model.addRow(new Object[]{formattedAccountNumber, account[1], accountType});
             }
 
             db.dbClose();
@@ -117,13 +121,13 @@ public class MainFrame extends javax.swing.JFrame {
 
         tblAccounts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "계좌 번호", "잔액"
+                "계좌 번호", "잔액", "계좌 유형"
             }
         ));
         jScrollPane1.setViewportView(tblAccounts);
@@ -230,11 +234,27 @@ public class MainFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "로그인되지 않은 상태에서는 계좌를 생성할 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
             return;
         }
+
+        String[] accountTypes = {"예금 계좌", "적금 계좌", "일반 계좌"};
+        String selectedType = (String) JOptionPane.showInputDialog(this, 
+                            "계좌 유형을 선택하세요.", 
+                            "계좌 유형 선택", 
+                            JOptionPane.QUESTION_MESSAGE, 
+                            null, 
+                            accountTypes, 
+                            accountTypes[0]);
+
+        if (selectedType == null) {
+            return;
+        }
+
+        String accountType = selectedType.equals("일반 계좌") ? "NORMAL" :
+                             selectedType.equals("예금 계좌") ? "SAVINGS" : "DEPOSIT";
         String accountNumber = generateAccountNumber();
         DB_MAN db = new DB_MAN();
         try {
             db.dbOpen();
-            db.createAccount(userId, accountNumber);
+            db.createAccount(userId, accountNumber, accountType);
             JOptionPane.showMessageDialog(this, "새 계좌 생성 완료! 계좌 번호: " + accountNumber);
             loadAccounts();
             db.dbClose();

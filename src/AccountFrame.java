@@ -47,8 +47,22 @@ public class AccountFrame extends javax.swing.JFrame {
     }
     
     private void displayAccountInfo() {
+        String accountType = accounts.stream()
+                .filter(acc -> acc[0].equals(accountNumber))
+                .map(acc -> {
+                    if (acc[2].equalsIgnoreCase("SAVINGS")) {
+                        return "예금 계좌";
+                    } else if (acc[2].equalsIgnoreCase("DEPOSIT")) {
+                        return "적금 계좌";
+                    } else {
+                        return "일반 계좌";
+                    }
+                })
+                .findFirst()
+                .orElse("알 수 없음");
         lblAccountNumber.setText("계좌 번호: " + formatAccountNumber(accountNumber));
         lblBalance.setText("잔액: " + balance + "원");
+        lblAccountType.setText("계좌 유형: " + accountType);
     }
 
     private void loadTransactionHistory() {
@@ -88,6 +102,7 @@ public class AccountFrame extends javax.swing.JFrame {
         btnDeposit = new javax.swing.JButton();
         btnWithdraw = new javax.swing.JButton();
         btnTransfer = new javax.swing.JButton();
+        lblAccountType = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -140,37 +155,38 @@ public class AccountFrame extends javax.swing.JFrame {
             }
         });
 
+        lblAccountType.setText("계좌 유형 :");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(236, 236, 236)
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(47, 47, 47)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(btnBack)
+                .addGap(47, 47, 47)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnBack)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel2)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(btnTransfer))
+                        .addGroup(layout.createSequentialGroup()
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblAccountNumber)
                                 .addGroup(layout.createSequentialGroup()
-                                    .addComponent(lblAccountNumber)
-                                    .addGap(176, 176, 176)
-                                    .addComponent(lblBalance))
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel2)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(btnTransfer))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(btnWithdraw)
-                                        .addComponent(btnDeposit)))))))
+                                    .addGap(178, 178, 178)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(lblBalance)
+                                        .addComponent(jLabel1))))
+                            .addGap(18, 18, 18)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(lblAccountType)
+                                .addComponent(btnWithdraw)
+                                .addComponent(btnDeposit)))))
                 .addContainerGap(39, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -181,11 +197,12 @@ public class AccountFrame extends javax.swing.JFrame {
                 .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblAccountNumber)
-                    .addComponent(lblBalance))
+                    .addComponent(lblBalance)
+                    .addComponent(lblAccountType))
                 .addGap(38, 38, 38)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnDeposit))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnDeposit, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnWithdraw)
                 .addGap(13, 13, 13)
@@ -352,6 +369,7 @@ public class AccountFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblAccountNumber;
+    private javax.swing.JLabel lblAccountType;
     private javax.swing.JLabel lblBalance;
     private javax.swing.JTable tblTransactions;
     private javax.swing.JTextField txtAmount;

@@ -64,12 +64,13 @@ public class DB_MAN {
         return false;
     }
     
-    public void createAccount(String userId, String accountNumber) throws SQLException {
-        String query = "INSERT INTO account (USER_ID, ACCOUNT_NUMBER, BALANCE) VALUES (?, ?, ?)";
+    public void createAccount(String userId, String accountNumber, String accountType) throws SQLException {
+        String query = "INSERT INTO account (USER_ID, ACCOUNT_NUMBER, BALANCE, ACCOUNT_TYPE) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
             pstmt.setString(1, userId);
             pstmt.setString(2, accountNumber);
             pstmt.setInt(3, 0); 
+            pstmt.setString(4, accountType);
             pstmt.executeUpdate();
         }
     }
@@ -102,7 +103,7 @@ public class DB_MAN {
     
     
     public List<String[]> getAccounts(String userId) throws SQLException {
-        String query = "SELECT ACCOUNT_NUMBER, BALANCE FROM account WHERE USER_ID = ?";
+        String query = "SELECT ACCOUNT_NUMBER, BALANCE, ACCOUNT_TYPE FROM account WHERE USER_ID = ?";
         List<String[]> accounts = new ArrayList<>();
         try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
             pstmt.setString(1, userId);
@@ -110,7 +111,8 @@ public class DB_MAN {
             while (rs.next()) {
                 String accountNumber = rs.getString("ACCOUNT_NUMBER");
                 String balance = String.valueOf(rs.getInt("BALANCE"));
-                accounts.add(new String[]{accountNumber, balance});
+                String accountType = rs.getString("ACCOUNT_TYPE");
+                accounts.add(new String[]{accountNumber, balance, accountType});
             }
         }
         return accounts;
