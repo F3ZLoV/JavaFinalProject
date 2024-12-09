@@ -255,6 +255,7 @@ public class MainFrame extends javax.swing.JFrame {
         try {
             db.dbOpen();
             db.createAccount(userId, accountNumber, accountType);
+            accounts.add(new String[]{accountNumber, "0", accountType});
             JOptionPane.showMessageDialog(this, "새 계좌 생성 완료! 계좌 번호: " + accountNumber);
             loadAccounts();
             db.dbClose();
@@ -305,6 +306,15 @@ public class MainFrame extends javax.swing.JFrame {
         String accountNumber = unformatAccountNumber(formattedAccountNumber);
         long balance = Long.parseLong((String) tblAccounts.getValueAt(selectedRow, 1));
 
+        DB_MAN db = new DB_MAN();
+        try {
+            db.dbOpen();
+            accounts = db.getAccounts(userId);
+            db.dbClose();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "오류: " + e.getMessage());
+        }
+        
         AccountFrame accountFrame = new AccountFrame(userId, accounts, accountNumber, balance);
         accountFrame.setVisible(true);
         this.dispose();

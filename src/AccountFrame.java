@@ -322,7 +322,6 @@ public class AccountFrame extends javax.swing.JFrame {
         this.dispose();
         MainFrame mainFrame = new MainFrame(userId, accounts);
         mainFrame.setVisible(true);
-        this.dispose();
     }//GEN-LAST:event_btnBackActionPerformed
 
     /**
