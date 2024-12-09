@@ -16,7 +16,9 @@ import javax.swing.ImageIcon;
 
 public class CaptchaGenerator {
     private Captcha captcha;
-
+    public Captcha getCaptcha() {
+        return captcha;
+    }
     public ImageIcon generateCaptcha() {
         // CAPTCHA 생성
         captcha = new Captcha.Builder(200, 50).addText(new DefaultTextProducer()).addBackground(new GradiatedBackgroundProducer()).gimp().build();
@@ -26,7 +28,7 @@ public class CaptchaGenerator {
     }
 
     public boolean validateCaptcha(String userInput) {
-        return captcha.isCorrect(userInput);
+        return captcha != null && captcha.isCorrect(userInput);
     }
 }
 

@@ -34,13 +34,8 @@ public class RegisterFrame extends javax.swing.JFrame {
     }
     
     private void refreshCaptcha() {
-        currentCaptcha = new Captcha.Builder(200, 50)
-                .addText(new DefaultTextProducer())
-                .addBackground(new GradiatedBackgroundProducer())
-                .gimp()
-                .build();
-
-        lblCaptchaImage.setIcon(new ImageIcon(currentCaptcha.getImage()));
+        lblCaptchaImage.setIcon(captchaGenerator.generateCaptcha());
+        currentCaptcha = captchaGenerator.getCaptcha();
     }
     
     private boolean validateCaptcha(String userInput) {
@@ -270,7 +265,7 @@ public class RegisterFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRegisterActionPerformed
 
     private void btnRefreshCaptchaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshCaptchaActionPerformed
-        lblCaptchaImage.setIcon(captchaGenerator.generateCaptcha());
+        refreshCaptcha();
         txtCaptchaInput.setText(""); // 입력 필드 초기화
     }//GEN-LAST:event_btnRefreshCaptchaActionPerformed
 
