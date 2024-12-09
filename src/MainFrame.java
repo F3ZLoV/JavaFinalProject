@@ -266,7 +266,9 @@ public class MainFrame extends javax.swing.JFrame {
     private void btnDeleteAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteAccountActionPerformed
         int selectedRow = tblAccounts.getSelectedRow();
         if (selectedRow != -1) {
-            String accountNumber = (String) tblAccounts.getValueAt(selectedRow, 0);
+            String formattedAccountNumber = (String) tblAccounts.getValueAt(selectedRow, 0);
+            String accountNumber = unformatAccountNumber(formattedAccountNumber);
+
             DB_MAN db = new DB_MAN();
             try {
                 db.dbOpen();

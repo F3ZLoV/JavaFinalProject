@@ -119,10 +119,18 @@ public class DB_MAN {
     }
 
     public void deleteAccount(String accountNumber) throws SQLException {
-        String query = "DELETE FROM account WHERE ACCOUNT_NUMBER = ?";
-        try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
-            pstmt.setString(1, accountNumber);
-            pstmt.executeUpdate();
+        String deleteTransactionsQuery = "DELETE FROM transaction WHERE ACCOUNT_NUMBER = ?";
+        String deleteAccountQuery = "DELETE FROM account WHERE ACCOUNT_NUMBER = ?";
+        try (PreparedStatement deleteTransactionsStmt = DB_con.prepareStatement(deleteTransactionsQuery);
+            PreparedStatement deleteAccountStmt = DB_con.prepareStatement(deleteAccountQuery)) {
+            deleteTransactionsStmt.setString(1, accountNumber);
+            deleteTransactionsStmt.executeUpdate();
+
+            deleteAccountStmt.setString(1, accountNumber);
+            int rowsAffected = deleteAccountStmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("계좌를 찾을 수 없거나 삭제할 수 없습니다.");
+            }
         }
     }
 
