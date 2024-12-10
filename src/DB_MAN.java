@@ -50,7 +50,7 @@ public class DB_MAN {
             pstmt.executeUpdate();
         }
     }
-
+    
     public boolean validateLogin(String id, String password) throws SQLException {
         String query = "SELECT PASSWORD FROM member WHERE ID = ?";
         try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
@@ -89,7 +89,7 @@ public class DB_MAN {
         String checkQuery = "SELECT COUNT(*) FROM account WHERE ACCOUNT_NUMBER = ?";
 
         do {
-            accountNumber = generateRandomAccountNumber(); // 랜덤 계좌 번호 생성
+            accountNumber = generateRandomAccountNumber();
             try (PreparedStatement pstmt = DB_con.prepareStatement(checkQuery)) {
                 pstmt.setString(1, accountNumber);
                 ResultSet rs = pstmt.executeQuery();
@@ -112,7 +112,7 @@ public class DB_MAN {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 String accountNumber = rs.getString("ACCOUNT_NUMBER");
-                String balance = String.valueOf(rs.getInt("BALANCE"));
+                String balance = String.valueOf(rs.getLong("BALANCE"));
                 String accountType = rs.getString("ACCOUNT_TYPE");
                 accounts.add(new String[]{accountNumber, balance, accountType});
             }
