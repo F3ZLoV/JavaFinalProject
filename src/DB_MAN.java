@@ -64,13 +64,15 @@ public class DB_MAN {
         return false;
     }
     
-    public void createAccount(String userId, String accountNumber, String accountType) throws SQLException {
-        String query = "INSERT INTO account (USER_ID, ACCOUNT_NUMBER, BALANCE, ACCOUNT_TYPE) VALUES (?, ?, ?, ?)";
+    public void createAccount(String userId, String accountNumber, String accountType, int monthlyPayment, int termMonths) throws SQLException {
+        String query = "INSERT INTO account (USER_ID, ACCOUNT_NUMBER, BALANCE, ACCOUNT_TYPE, MONTHLY_PAYMENT, TERM_MONTHS) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
             pstmt.setString(1, userId);
             pstmt.setString(2, accountNumber);
             pstmt.setInt(3, 0); 
             pstmt.setString(4, accountType);
+            pstmt.setInt(5, monthlyPayment);
+            pstmt.setInt(6, termMonths);
             pstmt.executeUpdate();
         }
     }
@@ -203,5 +205,43 @@ public class DB_MAN {
             }
         }
         return transactions;
+    }
+    
+    public void setInterestRate(String accountNumber, float interestRate) throws SQLException {
+        String query = "UPDATE account SET INTEREST_RATE = ? WHERE ACCOUNT_NUMBER = ?";
+        try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
+            pstmt.setFloat(1, interestRate);
+            pstmt.setString(2, accountNumber);
+            pstmt.executeUpdate();
+        }
+    }
+    
+    public float calculateExpectedInterest(String accountNumber, int months) throws SQLException {
+        String query = "SELECT BALANCE, INTEREST_RATE FROM account WHERE ACCOUNT_NUMBER = ?";
+        try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
+            pstmt.setString(1, accountNumber);
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next()) {
+                float balance = rs.getFloat("BALANCE");
+                float interestRate = rs.getFloat("INTEREST_RATE");
+                return balance * (interestRate/100) * (months / 12.0f);
+            }
+        }
+        return 0;
+    }
+    
+    public String[] getDepositAccountDetails(String accountNumber) throws SQLException {
+        String query = "SELECT MONTHLY_PAYMENT, TERM_MONTHS, INTEREST_RATE FROM account WHERE ACCOUNT_NUMBER = ?";
+        try (PreparedStatement pstmt = DB_con.prepareStatement(query)) {
+            pstmt.setString(1, accountNumber);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                String monthlyPayment = String.valueOf(rs.getInt("MONTHLY_PAYMENT"));
+                String termMonths = String.valueOf(rs.getInt("TERM_MONTHS"));
+                String interestRate = String.valueOf(rs.getFloat("INTEREST_RATE"));
+                return new String[]{monthlyPayment, termMonths, interestRate};
+            }
+        }
+        return null;
     }
 }

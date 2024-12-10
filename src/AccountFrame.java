@@ -1,4 +1,6 @@
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -103,6 +105,11 @@ public class AccountFrame extends javax.swing.JFrame {
         btnWithdraw = new javax.swing.JButton();
         btnTransfer = new javax.swing.JButton();
         lblAccountType = new javax.swing.JLabel();
+        lblInterestRate = new javax.swing.JLabel();
+        txtInterestRate = new javax.swing.JTextField();
+        btnSetInterestRate = new javax.swing.JButton();
+        btnCalculateInterest = new javax.swing.JButton();
+        lblExpectedInterest = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -157,6 +164,24 @@ public class AccountFrame extends javax.swing.JFrame {
 
         lblAccountType.setText("계좌 유형 :");
 
+        lblInterestRate.setText("예적금 이자율 설정 :");
+
+        btnSetInterestRate.setText("이자율 설정");
+        btnSetInterestRate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSetInterestRateActionPerformed(evt);
+            }
+        });
+
+        btnCalculateInterest.setText("예상 수익 계산");
+        btnCalculateInterest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCalculateInterestActionPerformed(evt);
+            }
+        });
+
+        lblExpectedInterest.setText("예상 수익 :");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -165,29 +190,44 @@ public class AccountFrame extends javax.swing.JFrame {
                 .addGap(47, 47, 47)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(btnBack)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel2)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(btnTransfer))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(lblAccountNumber)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGap(178, 178, 178)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(lblBalance)
-                                        .addComponent(jLabel1))))
-                            .addGap(18, 18, 18)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(lblAccountType)
-                                .addComponent(btnWithdraw)
-                                .addComponent(btnDeposit)))))
-                .addContainerGap(39, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(lblAccountNumber)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(178, 178, 178)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(lblBalance)
+                                            .addComponent(jLabel1))))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblAccountType)
+                                    .addComponent(btnWithdraw)
+                                    .addComponent(btnDeposit)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblInterestRate)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtInterestRate, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnSetInterestRate))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnTransfer))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnCalculateInterest)
+                                .addGap(18, 18, 18)
+                                .addComponent(lblExpectedInterest)))
+                        .addGap(31, 31, 31)))
+                .addContainerGap(91, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 488, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -205,14 +245,23 @@ public class AccountFrame extends javax.swing.JFrame {
                     .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnWithdraw)
-                .addGap(13, 13, 13)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
+                    .addComponent(txtTargetAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnTransfer))
-                .addGap(41, 41, 41)
+                .addGap(34, 34, 34)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblInterestRate)
+                    .addComponent(txtInterestRate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSetInterestRate))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnCalculateInterest)
+                    .addComponent(lblExpectedInterest))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 53, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(btnBack)
                 .addGap(24, 24, 24))
         );
@@ -324,6 +373,55 @@ public class AccountFrame extends javax.swing.JFrame {
         mainFrame.setVisible(true);
     }//GEN-LAST:event_btnBackActionPerformed
 
+    private void btnSetInterestRateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetInterestRateActionPerformed
+        try {
+            float interestRate = Float.parseFloat(txtInterestRate.getText());
+            DB_MAN db = new DB_MAN();
+            db.dbOpen();
+            db.setInterestRate(accountNumber, interestRate);
+            JOptionPane.showMessageDialog(this, "이자율이 설정되었습니다.");
+            db.dbClose();
+        } catch(Exception e) {
+            JOptionPane.showMessageDialog(this, "이자율 설정 오류: " + e.getMessage());
+        }
+    }//GEN-LAST:event_btnSetInterestRateActionPerformed
+
+    private void btnCalculateInterestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateInterestActionPerformed
+        DB_MAN db = new DB_MAN();
+        try {
+            db.dbOpen();
+            String accountType = accounts.stream()
+                                .filter(acc -> acc[0].equals(accountNumber))
+                                .map(acc -> acc[2])
+                                .findFirst()
+                                .orElse("NORMAL");
+            
+            if("DEPOSIT".equals(accountType)) { // 적금
+                String[] depositDetails = db.getDepositAccountDetails(accountNumber);
+                if (depositDetails != null) {
+                    int monthlyPayment = Integer.parseInt(depositDetails[0]);
+                    int termMonths = Integer.parseInt(depositDetails[1]);
+                    float interestRate = Float.parseFloat(depositDetails[2]);
+
+                    // 적금 예상 이자 계산
+                    float expectedInterest = monthlyPayment * termMonths * (interestRate / (12 * 100)) * (termMonths + 1) / 2;
+                    lblExpectedInterest.setText("예상 수익: " + String.format("%.2f", expectedInterest) + "원");
+                } else {
+                    lblExpectedInterest.setText("적금 계좌 정보를 찾을 수 없습니다.");
+                }
+            } else if ("SAVINGS".equals(accountType)) { // 예금
+                int months = Integer.parseInt(JOptionPane.showInputDialog(this, "예금 기간(개월)을 입력하세요."));
+                float expectedInterest = db.calculateExpectedInterest(accountNumber, months);
+                lblExpectedInterest.setText("예상 수익: " + String.format("%.2f", expectedInterest) + "원");
+            } else {
+                lblExpectedInterest.setText("일반 계좌는 이자 계산이 필요 없습니다.");
+            }
+            db.dbClose();
+        } catch(Exception e) {
+            JOptionPane.showMessageDialog(this, "예상 수익 계산 오류: " + e.getMessage());
+        }
+    }//GEN-LAST:event_btnCalculateInterestActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -361,7 +459,9 @@ public class AccountFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
+    private javax.swing.JButton btnCalculateInterest;
     private javax.swing.JButton btnDeposit;
+    private javax.swing.JButton btnSetInterestRate;
     private javax.swing.JButton btnTransfer;
     private javax.swing.JButton btnWithdraw;
     private javax.swing.JLabel jLabel1;
@@ -370,8 +470,11 @@ public class AccountFrame extends javax.swing.JFrame {
     private javax.swing.JLabel lblAccountNumber;
     private javax.swing.JLabel lblAccountType;
     private javax.swing.JLabel lblBalance;
+    private javax.swing.JLabel lblExpectedInterest;
+    private javax.swing.JLabel lblInterestRate;
     private javax.swing.JTable tblTransactions;
     private javax.swing.JTextField txtAmount;
+    private javax.swing.JTextField txtInterestRate;
     private javax.swing.JTextField txtTargetAccount;
     // End of variables declaration//GEN-END:variables
 }

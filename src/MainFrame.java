@@ -97,6 +97,7 @@ public class MainFrame extends javax.swing.JFrame {
         btnDeleteAccount = new javax.swing.JButton();
         btnLogout = new javax.swing.JButton();
         btnManageAccount = new javax.swing.JButton();
+        btnInterestManagement = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("은행 계좌 관리 시스템");
@@ -160,6 +161,13 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        btnInterestManagement.setText("이자율 관리");
+        btnInterestManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInterestManagementActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -174,14 +182,16 @@ public class MainFrame extends javax.swing.JFrame {
                         .addComponent(lblUserId))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(48, 48, 48)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnCreateAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnDeleteAccount)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btnManageAccount)))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnInterestManagement)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(btnCreateAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(btnDeleteAccount)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnManageAccount))))))
                 .addContainerGap(70, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(29, 29, 29)
@@ -206,7 +216,9 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(btnCreateAccount)
                     .addComponent(btnDeleteAccount)
                     .addComponent(btnManageAccount))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 121, Short.MAX_VALUE)
+                .addGap(27, 27, 27)
+                .addComponent(btnInterestManagement)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnLogin)
                     .addComponent(btnRegister)
@@ -252,9 +264,23 @@ public class MainFrame extends javax.swing.JFrame {
                              selectedType.equals("예금 계좌") ? "SAVINGS" : "DEPOSIT";
         String accountNumber = generateAccountNumber();
         DB_MAN db = new DB_MAN();
+        
+        int monthlyPayment = 0;
+        int termMonths = 0;
+        
+        if (accountType.equals("DEPOSIT")) {
+            try {
+                monthlyPayment = Integer.parseInt(JOptionPane.showInputDialog(this, "월 납입액을 입력하세요 (원):"));
+                termMonths = Integer.parseInt(JOptionPane.showInputDialog(this, "총 납입 기간(개월)을 입력하세요:"));
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "유효한 숫자를 입력하세요.", "입력 오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+        
         try {
             db.dbOpen();
-            db.createAccount(userId, accountNumber, accountType);
+            db.createAccount(userId, accountNumber, accountType, monthlyPayment, termMonths);
             accounts.add(new String[]{accountNumber, "0", accountType});
             JOptionPane.showMessageDialog(this, "새 계좌 생성 완료! 계좌 번호: " + accountNumber);
             loadAccounts();
@@ -320,6 +346,27 @@ public class MainFrame extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_btnManageAccountActionPerformed
 
+    private void btnInterestManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInterestManagementActionPerformed
+        int selectedRow = tblAccounts.getSelectedRow();
+        if(selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "계좌를 선택하세요.");
+            return;
+        }
+        String formattedAccountNumber = (String)tblAccounts.getValueAt(selectedRow, 0);
+        String accountNumber = unformatAccountNumber(formattedAccountNumber);
+        String accountType = (String)tblAccounts.getValueAt(selectedRow, 2);
+        if("일반 계좌".equals(accountType)) {
+            JOptionPane.showMessageDialog(this, "일반 계좌는 이자 관리를 할 수 없습니다.");
+            return;
+        }
+        
+        long balance = Long.parseLong((String) tblAccounts.getValueAt(selectedRow, 1));
+        
+        AccountFrame accountFrame = new AccountFrame(userId, accounts, accountNumber, balance);
+        accountFrame.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_btnInterestManagementActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -358,6 +405,7 @@ public class MainFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCreateAccount;
     private javax.swing.JButton btnDeleteAccount;
+    private javax.swing.JButton btnInterestManagement;
     private javax.swing.JButton btnLogin;
     private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnManageAccount;
