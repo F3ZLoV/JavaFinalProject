@@ -209,7 +209,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lblInterestRate">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&#xc608;&#xc801;&#xae08; &#xc774;&#xc790;&#xc728; &#xc124;&#xc815; :"/>
+        <Property name="text" type="java.lang.String" value="&#xc608;&#xc801;&#xae08; &#xc774;&#xc790;&#xc728; &#xc124;&#xc815; (%) :"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtInterestRate">

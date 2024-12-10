@@ -164,7 +164,7 @@ public class AccountFrame extends javax.swing.JFrame {
 
         lblAccountType.setText("계좌 유형 :");
 
-        lblInterestRate.setText("예적금 이자율 설정 :");
+        lblInterestRate.setText("예적금 이자율 설정 (%) :");
 
         btnSetInterestRate.setText("이자율 설정");
         btnSetInterestRate.addActionListener(new java.awt.event.ActionListener() {
